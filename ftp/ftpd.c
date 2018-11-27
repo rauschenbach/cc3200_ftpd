@@ -1,18 +1,18 @@
-/* Команды:  http://nsftools.com/tips/RawFTP.htm */
+/* РљРѕРјР°РЅРґС‹:  http://nsftools.com/tips/RawFTP.htm */
 
 #include "ftpd.h"
 #include "cmds.h"
 
 
 static struct conn *conn_list = NULL;
-static char ftp_buf[FTP_BUFFER_SIZE];	/* Буфер, чтобы не выделять память через malloc  */
+static char ftp_buf[FTP_BUFFER_SIZE];	/* Р‘СѓС„РµСЂ, С‡С‚РѕР±С‹ РЅРµ РІС‹РґРµР»СЏС‚СЊ РїР°РјСЏС‚СЊ С‡РµСЂРµР· malloc  */
 static FATFS fatfs;
 
 static int ftp_process_request(struct conn *session, char *buf);
 
 
 /**
- * Создать новое FTP соединение на каждую новую команду
+ * РЎРѕР·РґР°С‚СЊ РЅРѕРІРѕРµ FTP СЃРѕРµРґРёРЅРµРЅРёРµ РЅР° РєР°Р¶РґСѓСЋ РЅРѕРІСѓСЋ РєРѕРјР°РЅРґСѓ
  */
 static struct conn *alloc_new_conn(void)
 {
@@ -25,7 +25,7 @@ static struct conn *alloc_new_conn(void)
 }
 
 /** 
- * Закрыть текущее FTP соединение
+ * Р—Р°РєСЂС‹С‚СЊ С‚РµРєСѓС‰РµРµ FTP СЃРѕРµРґРёРЅРµРЅРёРµ
  */
 static void destroy_conn(struct conn *conn)
 {
@@ -48,7 +48,7 @@ static void destroy_conn(struct conn *conn)
 
 
 /**
- * Функция основного потока
+ * Р¤СѓРЅРєС†РёСЏ РѕСЃРЅРѕРІРЅРѕРіРѕ РїРѕС‚РѕРєР°
  */
 void ftpd_thread(void *par)
 {
@@ -64,17 +64,17 @@ void ftpd_thread(void *par)
 
 
 #if 0
-	char *ftp_buf = (char *) malloc(FTP_BUFFER_SIZE);	/* Буфер, чтобы не выделять память через malloc */
+	char *ftp_buf = (char *) malloc(FTP_BUFFER_SIZE);	/* Р‘СѓС„РµСЂ, С‡С‚РѕР±С‹ РЅРµ РІС‹РґРµР»СЏС‚СЊ РїР°РјСЏС‚СЊ С‡РµСЂРµР· malloc */
 #endif
 
-	/* Сначала подмонтируем ФС */
+	/* РЎРЅР°С‡Р°Р»Р° РїРѕРґРјРѕРЅС‚РёСЂСѓРµРј Р¤РЎ */
 	if (f_mount(&fatfs, "0", 1) != FR_OK) {
 		PRINTF("ERROR: Mount fs\n\r");
 		return;
 	}
 	PRINTF("SUCCESS: Mount fs\n\r");
 
-	/* Создаем сокет TCP для команд с этими настойками */
+	/* РЎРѕР·РґР°РµРј СЃРѕРєРµС‚ TCP РґР»СЏ РєРѕРјР°РЅРґ СЃ СЌС‚РёРјРё РЅР°СЃС‚РѕР№РєР°РјРё */
 	addr.sin_port = htons(FTP_CMD_PORT);
 	addr.sin_family = PF_INET;
 	addr.sin_addr.s_addr = INADDR_ANY;
@@ -86,7 +86,7 @@ void ftpd_thread(void *par)
 	}
 	PRINTF("SUCCESS: Create socket\r\n");
 
-	/* Привяжем на 21 порт */
+	/* РџСЂРёРІСЏР¶РµРј РЅР° 21 РїРѕСЂС‚ */
 	res = bind(sockfd, (struct sockaddr *) &addr, addr_len);
 	if (res < 0) {
 		PRINTF("ERROR: Bind socket\r\n");
@@ -99,11 +99,11 @@ void ftpd_thread(void *par)
 	}
 	PRINTF("SUCCESS: Listen socket\r\n");
 
-	/* Ждем входящего звонка - lock нужен для блокирования всех входящих соединений,
-	 * пока у нас есть одно рабочее. На функции select() зависает и вылетает сетевой стек
-	 * Если участок кода ниже сделать отдельной задачей (где while (conn != NULL) ...)
-	 * lock можно убрать, а при соединении на сервер одновременно другого клиента - 
-	 * можно посылать сообщение 500 или 503:  "Sorry, only one transfer at a time." 
+	/* Р–РґРµРј РІС…РѕРґСЏС‰РµРіРѕ Р·РІРѕРЅРєР° - lock РЅСѓР¶РµРЅ РґР»СЏ Р±Р»РѕРєРёСЂРѕРІР°РЅРёСЏ РІСЃРµС… РІС…РѕРґСЏС‰РёС… СЃРѕРµРґРёРЅРµРЅРёР№,
+	 * РїРѕРєР° Сѓ РЅР°СЃ РµСЃС‚СЊ РѕРґРЅРѕ СЂР°Р±РѕС‡РµРµ. РќР° С„СѓРЅРєС†РёРё select() Р·Р°РІРёСЃР°РµС‚ Рё РІС‹Р»РµС‚Р°РµС‚ СЃРµС‚РµРІРѕР№ СЃС‚РµРє
+	 * Р•СЃР»Рё СѓС‡Р°СЃС‚РѕРє РєРѕРґР° РЅРёР¶Рµ СЃРґРµР»Р°С‚СЊ РѕС‚РґРµР»СЊРЅРѕР№ Р·Р°РґР°С‡РµР№ (РіРґРµ while (conn != NULL) ...)
+	 * lock РјРѕР¶РЅРѕ СѓР±СЂР°С‚СЊ, Р° РїСЂРё СЃРѕРµРґРёРЅРµРЅРёРё РЅР° СЃРµСЂРІРµСЂ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РґСЂСѓРіРѕРіРѕ РєР»РёРµРЅС‚Р° - 
+	 * РјРѕР¶РЅРѕ РїРѕСЃС‹Р»Р°С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ 500 РёР»Рё 503:  "Sorry, only one transfer at a time." 
 	 */
 	for (;;) {
 		if (!lock) {
@@ -121,13 +121,13 @@ void ftpd_thread(void *par)
 					strcpy(conn->currentdir, FTP_SRV_ROOT);
 					conn->cmd_sockfd = com_socket;
 					conn->remote = addr;
-					lock = true;	/* Заблокируем accept() */
+					lock = true;	/* Р—Р°Р±Р»РѕРєРёСЂСѓРµРј accept() */
 				}
 			}
 		}
 
 
-		/* Этот участок кода можно сделать отдельной задачей - в task передавать параметр "conn" */
+		/* Р­С‚РѕС‚ СѓС‡Р°СЃС‚РѕРє РєРѕРґР° РјРѕР¶РЅРѕ СЃРґРµР»Р°С‚СЊ РѕС‚РґРµР»СЊРЅРѕР№ Р·Р°РґР°С‡РµР№ - РІ task РїРµСЂРµРґР°РІР°С‚СЊ РїР°СЂР°РјРµС‚СЂ "conn" */
 		conn = conn_list;
 		while (conn != NULL) {
 
@@ -161,7 +161,7 @@ void ftpd_thread(void *par)
 }
 
 /**
- * Сессия для каждого соединения - здесь нужен большой стек!!!
+ * РЎРµСЃСЃРёСЏ РґР»СЏ РєР°Р¶РґРѕРіРѕ СЃРѕРµРґРёРЅРµРЅРёСЏ - Р·РґРµСЃСЊ РЅСѓР¶РµРЅ Р±РѕР»СЊС€РѕР№ СЃС‚РµРє!!!
  */
 static int ftp_process_request(struct conn *conn, char *buf)
 {
@@ -169,15 +169,15 @@ static int ftp_process_request(struct conn *conn, char *buf)
 	FIL file;
 	ftp_cmd_user cmd;
 	int num_bytes;
-	char spare_buf[256];	/* И для имени файла и для обработки других команд */
+	char spare_buf[256];	/* Р РґР»СЏ РёРјРµРЅРё С„Р°Р№Р»Р° Рё РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РґСЂСѓРіРёС… РєРѕРјР°РЅРґ */
 	struct timeval tv;
 	fd_set readfds;
 	c8 *sbuf;
 	char *parameter_ptr, *ptr;
 	struct sockaddr_in pasvremote, local;
 	u32 addr_len = sizeof(struct sockaddr_in);
-	int ret = 0;		/* Результат выполнения этой функции */
-	int led_r = 0, led_w = 0;	/* Для моргания ламп при чтении и записи */
+	int ret = 0;		/* Р РµР·СѓР»СЊС‚Р°С‚ РІС‹РїРѕР»РЅРµРЅРёСЏ СЌС‚РѕР№ С„СѓРЅРєС†РёРё */
+	int led_r = 0, led_w = 0;	/* Р”Р»СЏ РјРѕСЂРіР°РЅРёСЏ Р»Р°РјРї РїСЂРё С‡С‚РµРЅРёРё Рё Р·Р°РїРёСЃРё */
 
 	sbuf = (c8 *) malloc(FTP_BUFFER_SIZE);
 	if (sbuf == NULL) {
@@ -196,7 +196,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		ptr++;
 	}
 
-	/* Какой параметр после команды и пробела  */
+	/* РљР°РєРѕР№ РїР°СЂР°РјРµС‚СЂ РїРѕСЃР»Рµ РєРѕРјР°РЅРґС‹ Рё РїСЂРѕР±РµР»Р°  */
 	parameter_ptr = strchr(buf, ' ');
 	if (parameter_ptr != NULL)
 		parameter_ptr++;
@@ -204,10 +204,10 @@ static int ftp_process_request(struct conn *conn, char *buf)
 	/* debug: */
 	PRINTF("INFO: %s requested \"%s\"\r\n", inet_ntoa(conn->remote.sin_addr), buf);
 
-	/* Разбор входящих команд */
+	/* Р Р°Р·Р±РѕСЂ РІС…РѕРґСЏС‰РёС… РєРѕРјР°РЅРґ */
 	cmd = (ftp_cmd_user) do_parse_command(buf);
 #if 0
-	/* Выкидывать пользователя, если он не залогинен - на всякий! */
+	/* Р’С‹РєРёРґС‹РІР°С‚СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, РµСЃР»Рё РѕРЅ РЅРµ Р·Р°Р»РѕРіРёРЅРµРЅ - РЅР° РІСЃСЏРєРёР№! */
 	if (cmd > CMD_PASS && conn->status != LOGGED_STAT) {
 		do_send_reply(conn->cmd_sockfd, "550 Permission denied.\r\n");
 		free(sbuf);
@@ -216,7 +216,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 #endif
 	switch (cmd) {
 
-		/* Посылка логина */
+		/* РџРѕСЃС‹Р»РєР° Р»РѕРіРёРЅР° */
 	case CMD_USER:
 		PRINTF("INFO: %s sent login \"%s\"\r\n", inet_ntoa(conn->remote.sin_addr), parameter_ptr);
 #if 0
@@ -233,7 +233,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		do_send_reply(conn->cmd_sockfd, "331 Password required for \"%s\"\r\n", parameter_ptr);
 		break;
 
-		/* Посылка пароля */
+		/* РџРѕСЃС‹Р»РєР° РїР°СЂРѕР»СЏ */
 	case CMD_PASS:
 		PRINTF("INFO: %s sent password \"%s\"\r\n", inet_ntoa(conn->remote.sin_addr), parameter_ptr);
 #if 0
@@ -252,7 +252,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		do_send_reply(conn->cmd_sockfd, "230 Password OK. Current directory is %s\r\n", FTP_SRV_ROOT);
 		break;
 
-		/* Расширенный листинг */
+		/* Р Р°СЃС€РёСЂРµРЅРЅС‹Р№ Р»РёСЃС‚РёРЅРі */
 	case CMD_LIST:
 		do_send_reply(conn->cmd_sockfd, "150 Opening Binary mode connection for file list.\r\n");
 		do_full_list(conn->currentdir, conn->data_sockfd);
@@ -261,7 +261,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		do_send_reply(conn->cmd_sockfd, "226 Transfer complete.\r\n");
 		break;
 
-		/* Простой листинг */
+		/* РџСЂРѕСЃС‚РѕР№ Р»РёСЃС‚РёРЅРі */
 	case CMD_NLST:
 		do_send_reply(conn->cmd_sockfd, "150 Opening Binary mode connection for file list.\r\n");
 		do_simple_list(conn->currentdir, conn->data_sockfd);
@@ -270,7 +270,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		do_send_reply(conn->cmd_sockfd, "226 Transfer complete.\r\n");
 		break;
 
-		/* Ничего не делаем - это опция клиента */
+		/* РќРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµРј - СЌС‚Рѕ РѕРїС†РёСЏ РєР»РёРµРЅС‚Р° */
 	case CMD_TYPE:
 		if (strcmp(parameter_ptr, "I") == 0) {
 			do_send_reply(conn->cmd_sockfd, "200 Type set to binary.\r\n");
@@ -279,7 +279,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		}
 		break;
 
-		/* Чтение выбранного файла */
+		/* Р§С‚РµРЅРёРµ РІС‹Р±СЂР°РЅРЅРѕРіРѕ С„Р°Р№Р»Р° */
 	case CMD_RETR:
 		strcpy(spare_buf, buf + 5);
 		do_full_path(conn, parameter_ptr, spare_buf, 256);
@@ -291,14 +291,14 @@ static int ftp_process_request(struct conn *conn, char *buf)
 			break;
 		}
 
-		/* Открыли файл на чтение */
+		/* РћС‚РєСЂС‹Р»Рё С„Р°Р№Р» РЅР° С‡С‚РµРЅРёРµ */
 		rc = f_open(&file, spare_buf, FA_READ);
 		if (rc != FR_OK) {
 			PRINTF("ERROR: open file %s for reading\r\n", spare_buf);
 			break;
 		}
 
-		/* Двигаемся по файлу с начала */
+		/* Р”РІРёРіР°РµРјСЃСЏ РїРѕ С„Р°Р№Р»Сѓ СЃ РЅР°С‡Р°Р»Р° */
 		if (conn->offset > 0 && conn->offset < num_bytes) {
 			f_lseek(&file, conn->offset);
 			do_send_reply(conn->cmd_sockfd, "150 Opening binary mode data connection for partial \"%s\" (%d/%d bytes).\r\n",
@@ -306,8 +306,8 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		} else {
 			do_send_reply(conn->cmd_sockfd, "150 Opening binary mode data connection for \"%s\" (%d bytes).\r\n", spare_buf, num_bytes);
 		}
-		/* Передаем данные файла. Перед посылков в сокет необходимо проверять num_bytes
-		 * иначе можно послать 0 байт и будет ошибка передачи  */
+		/* РџРµСЂРµРґР°РµРј РґР°РЅРЅС‹Рµ С„Р°Р№Р»Р°. РџРµСЂРµРґ РїРѕСЃС‹Р»РєРѕРІ РІ СЃРѕРєРµС‚ РЅРµРѕР±С…РѕРґРёРјРѕ РїСЂРѕРІРµСЂСЏС‚СЊ num_bytes
+		 * РёРЅР°С‡Рµ РјРѕР¶РЅРѕ РїРѕСЃР»Р°С‚СЊ 0 Р±Р°Р№С‚ Рё Р±СѓРґРµС‚ РѕС€РёР±РєР° РїРµСЂРµРґР°С‡Рё  */
 		led_r = 0;
 		do {
 			f_read(&file, sbuf, FTP_BUFFER_SIZE, (unsigned *) &num_bytes);
@@ -326,11 +326,11 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		break;
 
 
-		/* Запись файла в каталог FTP */
+		/* Р—Р°РїРёСЃСЊ С„Р°Р№Р»Р° РІ РєР°С‚Р°Р»РѕРі FTP */
 	case CMD_STOR:
 		do_full_path(conn, parameter_ptr, spare_buf, 256);
 
-		/* Открываем файло на запись */
+		/* РћС‚РєСЂС‹РІР°РµРј С„Р°Р№Р»Рѕ РЅР° Р·Р°РїРёСЃСЊ */
 		rc = f_open(&file, spare_buf, FA_WRITE | FA_OPEN_ALWAYS);
 		if (rc != FR_OK) {
 			do_send_reply(conn->cmd_sockfd, "550 Cannot open \"%s\" for writing.\r\n", spare_buf);
@@ -363,7 +363,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		close(conn->data_sockfd);
 		break;
 
-		/* Размер файла */
+		/* Р Р°Р·РјРµСЂ С„Р°Р№Р»Р° */
 	case CMD_SIZE:
 		do_full_path(conn, parameter_ptr, spare_buf, 256);
 		num_bytes = do_get_filesize(spare_buf);
@@ -374,22 +374,22 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		}
 		break;
 
-		/* Вернуть время модификации файла */
+		/* Р’РµСЂРЅСѓС‚СЊ РІСЂРµРјСЏ РјРѕРґРёС„РёРєР°С†РёРё С„Р°Р№Р»Р° */
 	case CMD_MDTM:
 		do_send_reply(conn->cmd_sockfd, "550 \"/\" : not a regular file\r\n");
 		break;
 
-		/* Система, на чем работает */
+		/* РЎРёСЃС‚РµРјР°, РЅР° С‡РµРј СЂР°Р±РѕС‚Р°РµС‚ */
 	case CMD_SYST:
 		do_send_reply(conn->cmd_sockfd, "215 UNIX Type: L8\r\n");
 		break;
 
-		/* Текущий рабочий каталог */
+		/* РўРµРєСѓС‰РёР№ СЂР°Р±РѕС‡РёР№ РєР°С‚Р°Р»РѕРі */
 	case CMD_PWD:
 		do_send_reply(conn->cmd_sockfd, "257 \"%s\" is current directory.\r\n", conn->currentdir);
 		break;
 
-		/* Сменить директорию */
+		/* РЎРјРµРЅРёС‚СЊ РґРёСЂРµРєС‚РѕСЂРёСЋ */
 	case CMD_CWD:
 		do_full_path(conn, parameter_ptr, spare_buf, 256);
 		do_send_reply(conn->cmd_sockfd, "250 Changed to directory \"%s\"\r\n", spare_buf);
@@ -397,7 +397,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		PRINTF("INFO: Changed working directory to %s\r\n", spare_buf);
 		break;
 
-		/* Сменить директорию вниз */
+		/* РЎРјРµРЅРёС‚СЊ РґРёСЂРµРєС‚РѕСЂРёСЋ РІРЅРёР· */
 	case CMD_CDUP:
 		//sprintf(spare_buf, "%s/%s", conn->currentdir, "..");
 		sprintf(spare_buf, "%s", conn->currentdir);
@@ -409,7 +409,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		break;
 
 
-		/* Установить позицию в файле с какого читать */
+		/* РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕР·РёС†РёСЋ РІ С„Р°Р№Р»Рµ СЃ РєР°РєРѕРіРѕ С‡РёС‚Р°С‚СЊ */
 	case CMD_REST:
 		if (atoi(parameter_ptr) >= 0) {
 			conn->offset = atoi(parameter_ptr);
@@ -417,7 +417,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		}
 		break;
 
-		/* Создать директорию */
+		/* РЎРѕР·РґР°С‚СЊ РґРёСЂРµРєС‚РѕСЂРёСЋ */
 	case CMD_MKD:
 		do_full_path(conn, parameter_ptr, spare_buf, 256);
 		if (f_mkdir(spare_buf)) {
@@ -427,7 +427,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		}
 		break;
 
-		/* Удалить файл */
+		/* РЈРґР°Р»РёС‚СЊ С„Р°Р№Р» */
 	case CMD_DELE:
 		do_full_path(conn, parameter_ptr, spare_buf, 256);
 		if (f_unlink(spare_buf) == FR_OK)
@@ -437,7 +437,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		}
 		break;
 
-		/* Удаляем директорию */
+		/* РЈРґР°Р»СЏРµРј РґРёСЂРµРєС‚РѕСЂРёСЋ */
 	case CMD_RMD:
 		do_full_path(conn, parameter_ptr, spare_buf, 256);
 		if (f_unlink(spare_buf)) {
@@ -447,8 +447,8 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		}
 		break;
 
-		/* Активный режим - сервер открывает соединение. параметры порта передаются в строке 
-		 * сделать СВОЙ порт 20 иначе некоторые клиенты не работают */
+		/* РђРєС‚РёРІРЅС‹Р№ СЂРµР¶РёРј - СЃРµСЂРІРµСЂ РѕС‚РєСЂС‹РІР°РµС‚ СЃРѕРµРґРёРЅРµРЅРёРµ. РїР°СЂР°РјРµС‚СЂС‹ РїРѕСЂС‚Р° РїРµСЂРµРґР°СЋС‚СЃСЏ РІ СЃС‚СЂРѕРєРµ 
+		 * СЃРґРµР»Р°С‚СЊ РЎР’РћР™ РїРѕСЂС‚ 20 РёРЅР°С‡Рµ РЅРµРєРѕС‚РѕСЂС‹Рµ РєР»РёРµРЅС‚С‹ РЅРµ СЂР°Р±РѕС‚Р°СЋС‚ */
 	case CMD_PORT:
 		{
 			int portcom[6];
@@ -468,9 +468,9 @@ static int ftp_process_request(struct conn *conn, char *buf)
 			}
 
 
-			/* Получим адрес как число long и удаленный порт 
-			 * Свой порт нужно обязательно поставить на 20!
-			 * попробую сделать bind
+			/* РџРѕР»СѓС‡РёРј Р°РґСЂРµСЃ РєР°Рє С‡РёСЃР»Рѕ long Рё СѓРґР°Р»РµРЅРЅС‹Р№ РїРѕСЂС‚ 
+			 * РЎРІРѕР№ РїРѕСЂС‚ РЅСѓР¶РЅРѕ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ РїРѕСЃС‚Р°РІРёС‚СЊ РЅР° 20!
+			 * РїРѕРїСЂРѕР±СѓСЋ СЃРґРµР»Р°С‚СЊ bind
 			 */
 			local.sin_port = htons(FTP_DATA_PORT);
 			local.sin_addr.s_addr = INADDR_ANY;
@@ -499,9 +499,9 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		break;
 
 #if 0
-		/* Пассивный режим - мы говорим к какому порту к нам подцепиться чтобы передать данные 
-		 * Хром, мозилла и прочие браузеры некоректно заканчивают работу (без QUIT),
-		 * и следующий клиент виснет на вызове select()
+		/* РџР°СЃСЃРёРІРЅС‹Р№ СЂРµР¶РёРј - РјС‹ РіРѕРІРѕСЂРёРј Рє РєР°РєРѕРјСѓ РїРѕСЂС‚Сѓ Рє РЅР°Рј РїРѕРґС†РµРїРёС‚СЊСЃСЏ С‡С‚РѕР±С‹ РїРµСЂРµРґР°С‚СЊ РґР°РЅРЅС‹Рµ 
+		 * РҐСЂРѕРј, РјРѕР·РёР»Р»Р° Рё РїСЂРѕС‡РёРµ Р±СЂР°СѓР·РµСЂС‹ РЅРµРєРѕСЂРµРєС‚РЅРѕ Р·Р°РєР°РЅС‡РёРІР°СЋС‚ СЂР°Р±РѕС‚Сѓ (Р±РµР· QUIT),
+		 * Рё СЃР»РµРґСѓСЋС‰РёР№ РєР»РёРµРЅС‚ РІРёСЃРЅРµС‚ РЅР° РІС‹Р·РѕРІРµ select()
 		 */
 	case CMD_PASV:
 		do {
@@ -543,7 +543,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 			}
 
 
-			/* Послать свой IP адрес и свой порт к которому нужно прицепиться */
+			/* РџРѕСЃР»Р°С‚СЊ СЃРІРѕР№ IP Р°РґСЂРµСЃ Рё СЃРІРѕР№ РїРѕСЂС‚ Рє РєРѕС‚РѕСЂРѕРјСѓ РЅСѓР¶РЅРѕ РїСЂРёС†РµРїРёС‚СЊСЃСЏ */
 			do_send_reply(conn->cmd_sockfd, "227 Entering passive mode (%d,%d,%d,%d,%d,%d)\r\n",
 				      ip_addr.bIp[3], ip_addr.bIp[2], ip_addr.bIp[1], ip_addr.bIp[0], dig1, dig2);
 
@@ -569,7 +569,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 			}
 		} while (0);
 
-		/* Если ошибка, ставим ret = 0 и пробуем команду PORT */
+		/* Р•СЃР»Рё РѕС€РёР±РєР°, СЃС‚Р°РІРёРј ret = 0 Рё РїСЂРѕР±СѓРµРј РєРѕРјР°РЅРґСѓ PORT */
 		if (ret) {
 			PRINTF("ERROR: # %d\r\n", ret);
 			close(conn->data_sockfd);
@@ -577,32 +577,32 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		}
 		break;
 #endif
-		/* Если идут запросы */
+		/* Р•СЃР»Рё РёРґСѓС‚ Р·Р°РїСЂРѕСЃС‹ */
 	case CMD_NOOP:
 		do_send_reply(conn->cmd_sockfd, "200 Command okay. I'm live.\r\n");
 		break;
 
-		/* Переименовать ИЗ */
+		/* РџРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ РР— */
 	case CMD_RNFR:
 		do {
-			/* Не задано имя файла */
+			/* РќРµ Р·Р°РґР°РЅРѕ РёРјСЏ С„Р°Р№Р»Р° */
 			if (parameter_ptr == NULL) {
 				do_send_reply(conn->cmd_sockfd, "501 Syntax error in parameters or no file name\r\n");
 				break;
 			}
 
-			/* Заданное имя файла */
+			/* Р—Р°РґР°РЅРЅРѕРµ РёРјСЏ С„Р°Р№Р»Р° */
 			strcpy(spare_buf, buf + 5);
 			do_full_path(conn, parameter_ptr, spare_buf, 256);
 
-			/* Если такой файл есть - у него есть размер  */
+			/* Р•СЃР»Рё С‚Р°РєРѕР№ С„Р°Р№Р» РµСЃС‚СЊ - Сѓ РЅРµРіРѕ РµСЃС‚СЊ СЂР°Р·РјРµСЂ  */
 			num_bytes = do_get_filesize(spare_buf);
 			if (num_bytes == -1) {
 				do_send_reply(conn->cmd_sockfd, "550 \"%s\" file not found\r\n", spare_buf);
 				break;
 			}
-			/* Файл нашли. Ждем команду во что переименовать. У нас нет StateMachine, 
-			 * поэтому следующая команда должна быть RNTO */
+			/* Р¤Р°Р№Р» РЅР°С€Р»Рё. Р–РґРµРј РєРѕРјР°РЅРґСѓ РІРѕ С‡С‚Рѕ РїРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ. РЈ РЅР°СЃ РЅРµС‚ StateMachine, 
+			 * РїРѕСЌС‚РѕРјСѓ СЃР»РµРґСѓСЋС‰Р°СЏ РєРѕРјР°РЅРґР° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ RNTO */
 			strcpy(conn->file_to_rename, spare_buf);
 			conn->rn_file = true;
 			do_send_reply(conn->cmd_sockfd, "350 RNFR accepted - file exists, ready for destination\r\n");
@@ -610,10 +610,10 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		break;
 
 
-		/* Переименовать В */
+		/* РџРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ Р’ */
 	case CMD_RNTO:
 		do {
-			/* Не задано имя файла во что переименовать и нет исходного  */
+			/* РќРµ Р·Р°РґР°РЅРѕ РёРјСЏ С„Р°Р№Р»Р° РІРѕ С‡С‚Рѕ РїРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ Рё РЅРµС‚ РёСЃС…РѕРґРЅРѕРіРѕ  */
 			if (conn->rn_file == false) {
 				do_send_reply(conn->cmd_sockfd, "503 Need RNFR before RNTO\r\n");
 			} else if (parameter_ptr == NULL) {
@@ -631,7 +631,7 @@ static int ftp_process_request(struct conn *conn, char *buf)
 					do_send_reply(conn->cmd_sockfd, "451 Rename file failure\r\n");
 				}                               
                                 
-                                /* Обязательно! */ 
+                                /* РћР±СЏР·Р°С‚РµР»СЊРЅРѕ! */ 
                                 do_send_reply(conn->cmd_sockfd, "226 Finished.\r\n");
 			}
 			conn->rn_file = false;
@@ -639,18 +639,18 @@ static int ftp_process_request(struct conn *conn, char *buf)
 		} while (0);
 		break;
 
-		/* Никаких фич у нас нет */
+		/* РќРёРєР°РєРёС… С„РёС‡ Сѓ РЅР°СЃ РЅРµС‚ */
 	case CMD_FEAT:
 		do_send_reply(conn->cmd_sockfd, "211 No-features\r\n");
 		break;
 
-		/* Завершение работы */
+		/* Р—Р°РІРµСЂС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ */
 	case CMD_QUIT:
 		do_send_reply(conn->cmd_sockfd, "221 Adios!\r\n");
-		ret = 1;	/* В этом случае пишем 1-цу */
+		ret = 1;	/* Р’ СЌС‚РѕРј СЃР»СѓС‡Р°Рµ РїРёС€РµРј 1-С†Сѓ */
 		break;
 
-		/* НЕИЗВЕСТНАЯ КОМАНДА */
+		/* РќР•РР—Р’Р•РЎРўРќРђРЇ РљРћРњРђРќР”Рђ */
 	default:
 		do_send_reply(conn->cmd_sockfd, "502 Not Implemented yet.\r\n");
 		break;
