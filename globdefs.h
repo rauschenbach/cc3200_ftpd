@@ -10,7 +10,7 @@
 #include <time.h>
 
 
-/* Включения для 504 блекфина, не 506!!!!  */
+/* Р’РєР»СЋС‡РµРЅРёСЏ РґР»СЏ 504 Р±Р»РµРєС„РёРЅР°, РЅРµ 506!!!!  */
 #ifndef _WIN32			/* Embedded platform */
 #include <float.h>
 #else				/* windows   */
@@ -65,13 +65,13 @@
 #endif
 
 
-/* Длинное время */
+/* Р”Р»РёРЅРЅРѕРµ РІСЂРµРјСЏ */
 #ifndef	time64
 #define time64	int64_t
 #endif
 
 
-/* long double не поддержываеца  */
+/* long double РЅРµ РїРѕРґРґРµСЂР¶С‹РІР°РµС†Р°  */
 #ifndef f32
 #define f32 float
 #endif
@@ -95,11 +95,11 @@
 #endif
 
 
-/* Делители */
+/* Р”РµР»РёС‚РµР»Рё */
 #define 	SYSCLK          	80000000UL
 
 
-/* Стек для задач. размер */
+/* РЎС‚РµРє РґР»СЏ Р·Р°РґР°С‡. СЂР°Р·РјРµСЂ */
 #define OSI_STACK_SIZE          1024
 
 
@@ -119,7 +119,7 @@
 #define 		ADC_TASK_PRIORITY		1
 
 /** 
- *  Передадим FTP серверу
+ *  РџРµСЂРµРґР°РґРёРј FTP СЃРµСЂРІРµСЂСѓ
  */ 
 typedef union {
     u32 ip;
