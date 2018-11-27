@@ -6,18 +6,18 @@
 
 
 #define FTP_CMD_PORT		21
-#define FTP_DATA_PORT		(FTP_CMD_PORT - 1) /* Меньше на единицу всегда */
+#define FTP_DATA_PORT		(FTP_CMD_PORT - 1) /* РњРµРЅСЊС€Рµ РЅР° РµРґРёРЅРёС†Сѓ РІСЃРµРіРґР° */
 #define	FTP_PASSV_PORT		10000
 #define FTP_SRV_ROOT		"/"
 #define FTP_MAX_CONNECTION	1
 #define FTP_USER		"erik"
 #define FTP_PASSWORD		"erik"
 #define FTP_WELCOME_MSG		"220 Test FTP server for CC3200 ready.\r\n"
-#define FTP_BUFFER_SIZE		 (256 * 2)	/* если 512 байт - не рушица буфер при передаче на stm32 */
+#define FTP_BUFFER_SIZE		 (256 * 2)	/* РµСЃР»Рё 512 Р±Р°Р№С‚ - РЅРµ СЂСѓС€РёС†Р° Р±СѓС„РµСЂ РїСЂРё РїРµСЂРµРґР°С‡Рµ РЅР° stm32 */
 
-/* Задержка во время чтения или записи */ 
+/* Р—Р°РґРµСЂР¶РєР° РІРѕ РІСЂРµРјСЏ С‡С‚РµРЅРёСЏ РёР»Рё Р·Р°РїРёСЃРё */ 
 #if 1
-#define SLEEP(x) 		    osi_Sleep(x) /* или vTaskDelay(x) */
+#define SLEEP(x) 		    osi_Sleep(x) /* РёР»Рё vTaskDelay(x) */
 #else
 #define SLEEP(x)		    vTaskDelay(x)	
 #endif
@@ -25,7 +25,7 @@
 
 
 /**
- * Состояние FTP, чтобы не было возможности войти без пароля
+ * РЎРѕСЃС‚РѕСЏРЅРёРµ FTP, С‡С‚РѕР±С‹ РЅРµ Р±С‹Р»Рѕ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РІРѕР№С‚Рё Р±РµР· РїР°СЂРѕР»СЏ
  */
 typedef enum {
     ANON_STAT,
@@ -36,7 +36,7 @@ typedef enum {
 
 
 /**
- * Команды FTP
+ * РљРѕРјР°РЅРґС‹ FTP
  */
 typedef enum {
     CMD_USER,
@@ -70,19 +70,19 @@ typedef enum {
 
 
 /**
- * Связный список. Можно упаковать
+ * РЎРІСЏР·РЅС‹Р№ СЃРїРёСЃРѕРє. РњРѕР¶РЅРѕ СѓРїР°РєРѕРІР°С‚СЊ
  */
 struct conn {
-    int    cmd_sockfd;          /* Командный сокет */
+    int    cmd_sockfd;          /* РљРѕРјР°РЅРґРЅС‹Р№ СЃРѕРєРµС‚ */
     struct sockaddr_in remote;
-    ftp_state_en status;	/* Вошел с паролем */
-    char pasv_active;		/* Открыт сокет данных */
-    bool rn_file;			/* Переименовать файл */
-    int  data_sockfd;   	/* Сокет данных - пассивный илиактивный */
-    u16  pasv_port;		/* Порт данных */
+    ftp_state_en status;	/* Р’РѕС€РµР» СЃ РїР°СЂРѕР»РµРј */
+    char pasv_active;		/* РћС‚РєСЂС‹С‚ СЃРѕРєРµС‚ РґР°РЅРЅС‹С… */
+    bool rn_file;			/* РџРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ С„Р°Р№Р» */
+    int  data_sockfd;   	/* РЎРѕРєРµС‚ РґР°РЅРЅС‹С… - РїР°СЃСЃРёРІРЅС‹Р№ РёР»РёР°РєС‚РёРІРЅС‹Р№ */
+    u16  pasv_port;		/* РџРѕСЂС‚ РґР°РЅРЅС‹С… */
     size_t offset;
     char   currentdir[FTP_BUFFER_SIZE];	/* current directory */
-    char   file_to_rename[FTP_BUFFER_SIZE];	/* Имя файла для переименования. перетащить в глобальную переменную? */
+    char   file_to_rename[FTP_BUFFER_SIZE];	/* РРјСЏ С„Р°Р№Р»Р° РґР»СЏ РїРµСЂРµРёРјРµРЅРѕРІР°РЅРёСЏ. РїРµСЂРµС‚Р°С‰РёС‚СЊ РІ РіР»РѕР±Р°Р»СЊРЅСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ? */
     struct conn *next;
 };
 
