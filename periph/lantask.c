@@ -26,7 +26,7 @@ static OsiTaskHandle gFtpTaskHandle;
 static char buf[256];
 
 /**
- * Подсоединиться к точке доступа, указанной в файле recparam.ini
+ * РџРѕРґСЃРѕРµРґРёРЅРёС‚СЊСЃСЏ Рє С‚РѕС‡РєРµ РґРѕСЃС‚СѓРїР°, СѓРєР°Р·Р°РЅРЅРѕР№ РІ С„Р°Р№Р»Рµ recparam.ini
  */
 void xchg_start(void)
 {
@@ -47,7 +47,7 @@ void xchg_start(void)
 
 
 /**
- * Сделаем UDP Эхо сервер
+ * РЎРґРµР»Р°РµРј UDP Р­С…Рѕ СЃРµСЂРІРµСЂ
  */
 static void vUdpEchoTask(void *par)
 {
@@ -55,7 +55,7 @@ static void vUdpEchoTask(void *par)
 	struct sockaddr_in local;
 	u32 addr_len = sizeof(struct sockaddr);
 
-	/* Создаем сокет UDP  */
+	/* РЎРѕР·РґР°РµРј СЃРѕРєРµС‚ UDP  */
 	local.sin_port = htons(UDP_ECHO_PORT);
 	local.sin_family = PF_INET;
 	local.sin_addr.s_addr = INADDR_ANY;
@@ -135,7 +135,7 @@ static void vWlanStationTask(void *par)
 		PRINTF("INFO: Connection established w/ AP and IP is aquired\n");
 
 
-		/* Создаем задачу ftp */
+		/* РЎРѕР·РґР°РµРј Р·Р°РґР°С‡Сѓ ftp */
 		if (gFtpTaskHandle == NULL) {
 			ret = osi_TaskCreate(ftpd_thread, "Ftpd Task", OSI_STACK_SIZE * 8, par, TCP_RX_TASK_PRIORITY, &gFtpTaskHandle);
 			if (ret != OSI_OK) {
@@ -155,7 +155,7 @@ static void vWlanStationTask(void *par)
 		}
 #endif
 
-		/* Пока не рухнет  */
+		/* РџРѕРєР° РЅРµ СЂСѓС…РЅРµС‚  */
 		while (IS_CONNECTED(get_wlan_status())) {
 			//PRINTF(".");
 			osi_Sleep(1000);
@@ -224,7 +224,7 @@ static long ConfigureSimpleLinkToDefaultState(void)
 	long ret = -1;
 	long lMode = -1;
 
-	// Подключаем в режиме станции
+	// РџРѕРґРєР»СЋС‡Р°РµРј РІ СЂРµР¶РёРјРµ СЃС‚Р°РЅС†РёРё
 	lMode = sl_Start(0, 0, 0);
 	ASSERT_ON_ERROR(lMode);
 	/* Get the device's version-information */
